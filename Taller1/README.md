@@ -2,6 +2,9 @@
 
 Este repositorio contiene los programas desarrollados para el Taller 1 del curso de Sistemas Operativos. Los programas están escritos en C y demuestran diferentes conceptos fundamentales de sistemas operativos como procesos, manejo de archivos, y comparación de valores.
 
+
+#Grupo 7
+
 ## 📁 Estructura del Proyecto
 
 ```
