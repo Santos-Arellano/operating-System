@@ -24,18 +24,7 @@ int main(int argc, char *argv[]) {
     }
     else if (pid == 0) {
         // Proceso hijo: ejecutar matrizsum usando execl
-        // Nota: Asegúrate de que matrizsum esté en el mismo directorio
-        // o proporciona la ruta completa
-        
-        // Opción 1: Usando execl (lista de argumentos)
         execl("./matrizsum", "matrizsum", argv[1], argv[2], NULL);
-        
-        // Opción 2: Usando execlp (busca en PATH)
-        // execlp("matrizsum", "matrizsum", argv[1], argv[2], NULL);
-        
-        // Opción 3: Usando execv (vector de argumentos)
-        // char *args[] = {"matrizsum", argv[1], argv[2], NULL};
-        // execv("./matrizsum", args);
         
         // Si llegamos aquí, hubo un error en exec
         perror("Error ejecutando matrizsum");

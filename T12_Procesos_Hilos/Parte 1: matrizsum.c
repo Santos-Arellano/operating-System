@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Error al asignar memoria para la fila %d\n", i);
             return 1;
         }
-        // Inicializar con valores de ejemplo (puedes cambiar este patrón)
+        // Inicializar con valores de ejemplo
         for (int j = 0; j < m; j++) {
-            matriz[i][j] = i + j + 1; // Valores simples para ejemplo
+            matriz[i][j] = i + j + 1;
         }
     }
     

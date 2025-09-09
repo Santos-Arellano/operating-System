@@ -52,10 +52,8 @@ void* procesar_filas(void* arg) {
 }
 
 int main(int argc, char *argv[]) {
-    // IMPORTANTE: Cambiar el valor de p según tu número de grupo
-    // p = número_de_grupo + 2
+    // CONFIGURACIÓN PARA GRUPO 7
     int p = 9;  // Grupo 7: p = 7 + 2 = 9
-    // *** CONFIGURADO PARA GRUPO 7 ***
     
     // Validación de argumentos
     if (argc != 3) {
@@ -96,7 +94,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Error al asignar memoria para la fila %d\n", i);
             return 1;
         }
-        // Llenar con valores aleatorios (0-9 para facilitar visualización)
+        // Llenar con valores aleatorios (0-9)
         for (int j = 0; j < m; j++) {
             matriz[i][j] = rand() % 10;
         }
