@@ -23,7 +23,7 @@ Este repositorio contiene **tres implementaciones** del sistema de sensores clim
 > Probado en Linux con `gcc`, `make` y `pthread`.
 
 ---
-
+ 
 ## Requisitos
 
 - Linux (nativo o VM).
@@ -149,7 +149,7 @@ cd ParteB_pipes && make clean && cd ..
 cd ParteC_pipes_senales && make clean && cd ..
 
 # Eliminar FIFOs
-rm -f /tmp/fifo_temp /tmp/fifo_humedad /tmp/fifo_viento /tmp/fifo_lluvia
+rm -f /tmp/fifo_temp /tmp/fifo_humedad /tmp/fifo_viento /tmp/FIFO_LLUVIA
 rm -f /tmp/sensor_*.pid
 ```
 

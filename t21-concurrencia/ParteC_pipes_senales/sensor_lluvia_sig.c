@@ -28,7 +28,7 @@ static void now_str(char* buf, size_t n){
 }
 
 int main(void){
-    const char* fifo = "/tmp/fifo_lluvia";
+    const char* fifo = "/tmp/FIFO_LLUVIA";
     const char* sname = "LLUVIA";
     const char* pidfile = "/tmp/sensor_LLUVIa.pid";
     srand((unsigned)time(NULL) ^ getpid());

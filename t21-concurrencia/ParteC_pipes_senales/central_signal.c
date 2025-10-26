@@ -14,7 +14,7 @@
 #define FIFO_TEMP     "/tmp/fifo_temp"
 #define FIFO_HUMEDAD  "/tmp/fifo_humedad"
 #define FIFO_VIENTO   "/tmp/fifo_viento"
-#define FIFO_LLUVIa   "/tmp/fifo_lluvia"
+#define FIFO_LLUVIA   "/tmp/FIFO_LLUVIA"
 
 typedef struct {
     double temp, hum, vien, lluv;
@@ -67,11 +67,11 @@ int main(void){
     mkfifo_if_needed(FIFO_TEMP);
     mkfifo_if_needed(FIFO_HUMEDAD);
     mkfifo_if_needed(FIFO_VIENTO);
-    mkfifo_if_needed(FIFO_LLUVIa);
+    mkfifo_if_needed(FIFO_LLUVIA);
 
     int fds[4];
     const char* names[4] = { "TEMP","HUM","VIENTO","LLUVIA" };
-    const char* fifos[4] = { FIFO_TEMP, FIFO_HUMEDAD, FIFO_VIENTO, FIFO_LLUVIa };
+    const char* fifos[4] = { FIFO_TEMP, FIFO_HUMEDAD, FIFO_VIENTO, FIFO_LLUVIA };
 
     struct pollfd pfds[4];
     int dummy_w[4];

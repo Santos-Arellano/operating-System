@@ -21,7 +21,7 @@ static void now_str(char* buf, size_t n){
 }
 
 int main(void){
-    const char* fifo = "/tmp/fifo_lluvia";
+    const char* fifo = "/tmp/FIFO_LLUVIA";
     const char* sname = "LLUVIA";
     int base = 10;   // segundos base
     int jitter = 5; // +/-

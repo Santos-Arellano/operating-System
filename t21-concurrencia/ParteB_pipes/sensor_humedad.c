@@ -1,4 +1,4 @@
-//t21-concurrencia/ParteB_pipes/run.sh
+//t21-concurrencia/ParteB_pipes/sensor_humedad.c
 #define _XOPEN_SOURCE 700
 #include <stdio.h>
 #include <stdlib.h>
