@@ -59,7 +59,7 @@ int main(void){
             got_usr1 = 0;
             double val = rnd_range(-5.0,40.0);
             now_str(ts,sizeof ts);
-            int n = snprintf(line,sizeof line, "%s;%.2f;%s\n", sname, val, ts);
+            int n = snprintf(line,sizeof line, "%s;%.2f;%s;%d\n", sname, val, ts, getpid());
             write(fd, line, n);
         }
     }

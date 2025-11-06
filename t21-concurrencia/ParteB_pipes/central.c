@@ -18,6 +18,7 @@
 typedef struct {
     double temp, hum, vien, lluv;
     struct timespec ts_temp, ts_hum, ts_vien, ts_lluv;
+    int pid_temp, pid_hum, pid_vien, pid_lluv;
 } clima_t;
 
 static void mkfifo_if_needed(const char* path){
@@ -45,11 +46,14 @@ static void write_file(const clima_t* c){
     ts_to_str(&c->ts_lluv,t4,sizeof t4);
     fprintf(f,
         "# Estado actual del clima (central con FIFOs)\n"
-        "Temperatura (C): %.2f (ts=%s)\n"
-        "Humedad (%%): %.2f (ts=%s)\n"
-        "Viento (m/s): %.2f (ts=%s)\n"
-        "Precipitacion (mm): %.2f (ts=%s)\n",
-        c->temp,t1,c->hum,t2,c->vien,t3,c->lluv,t4
+        "Temperatura (C): %.2f (ts=%s, pid=%d)\n"
+        "Humedad (%%): %.2f (ts=%s, pid=%d)\n"
+        "Viento (m/s): %.2f (ts=%s, pid=%d)\n"
+        "Precipitacion (mm): %.2f (ts=%s, pid=%d)\n",
+        c->temp,t1,c->pid_temp,
+        c->hum,t2,c->pid_hum,
+        c->vien,t3,c->pid_vien,
+        c->lluv,t4,c->pid_lluv
     );
     fclose(f);
     rename("clima_actual.txt.tmp","clima_actual.txt");
@@ -91,14 +95,14 @@ int main(void){
                 if(n>0){
                     buf[n]=0;
                     char sensor[32], ts[64];
-                    double val=0;
-                    if(sscanf(buf, "%31[^;];%lf;%63[^\n]", sensor, &val, ts)==3){
+                    double val=0; int pid=0;
+                    if(sscanf(buf, "%31[^;];%lf;%63[^;];%d", sensor, &val, ts, &pid)==4){
                         struct timespec now; clock_gettime(CLOCK_REALTIME,&now);
-                        if(strcmp(sensor,"TEMP")==0){ c.temp=val; c.ts_temp=now; }
-                        else if(strcmp(sensor,"HUM")==0){ c.hum=val; c.ts_hum=now; }
-                        else if(strcmp(sensor,"VIENTO")==0){ c.vien=val; c.ts_vien=now; }
-                        else if(strcmp(sensor,"LLUVIA")==0){ c.lluv=val; c.ts_lluv=now; }
-                        printf("[central] %s=%.2f (%s)\n", sensor, val, ts);
+                        if(strcmp(sensor,"TEMP")==0){ c.temp=val; c.ts_temp=now; c.pid_temp=pid; }
+                        else if(strcmp(sensor,"HUM")==0){ c.hum=val; c.ts_hum=now; c.pid_hum=pid; }
+                        else if(strcmp(sensor,"VIENTO")==0){ c.vien=val; c.ts_vien=now; c.pid_vien=pid; }
+                        else if(strcmp(sensor,"LLUVIA")==0){ c.lluv=val; c.ts_lluv=now; c.pid_lluv=pid; }
+                        printf("[central] %s=%.2f (%s) pid=%d\n", sensor, val, ts, pid);
                         write_file(&c);
                     }
                 }

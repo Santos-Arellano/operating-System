@@ -44,7 +44,7 @@ int main(void){
         sleep(sleep_s);
         double val = rnd_range(0.0,50.0);
         now_str(ts,sizeof ts);
-        int n = snprintf(line,sizeof line, "%s;%.2f;%s\\n", sname, val, ts);
+        int n = snprintf(line,sizeof line, "%s;%.2f;%s;%d\\n", sname, val, ts, getpid());
         write(fd, line, n);
     }
     return 0;

@@ -55,10 +55,12 @@ static void write_file_atomic(){
 
     fprintf(f,
         "# Estado actual del clima (actualizado por seccion critica con mutex)\n"
+        "Proceso PID: %d\n"
         "Temperatura (C): %.2f (ts=%s)\n"
         "Humedad (%%): %.2f (ts=%s)\n"
         "Viento (m/s): %.2f (ts=%s)\n"
         "Precipitacion (mm): %.2f (ts=%s)\n",
+        getpid(),
         shared.temperatura, t1,
         shared.humedad, t2,
         shared.viento, t3,
