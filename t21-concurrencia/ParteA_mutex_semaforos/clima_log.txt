@@ -1,0 +1,6 @@
+# Inicio proceso PID=93172
+[viento     ] PID=93172 nuevo=0.23 a las 1762463069222 ms
+[lluvia     ] PID=93172 nuevo=6.96 a las 1762463072232 ms
+[temperatura] PID=93172 nuevo=28.51 a las 1762463073224 ms
+[humedad    ] PID=93172 nuevo=87.62 a las 1762463074237 ms
+[viento     ] PID=93172 nuevo=28.55 a las 1762463075247 ms

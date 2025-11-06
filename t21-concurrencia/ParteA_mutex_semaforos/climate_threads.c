@@ -127,8 +127,20 @@ static void* hilo_sensor(void* arg){
             pthread_mutex_unlock(&mtx);
         }
 
-        printf("[%-11s] nuevo=%.2f a las %ld ms\n", cfg->nombre, valor, ms_now());
+        char line[256];
+        snprintf(line, sizeof line, "[%-11s] PID=%d nuevo=%.2f a las %ld ms\n",
+                 cfg->nombre, getpid(), valor, ms_now());
+        fputs(line, stdout);
         fflush(stdout);
+
+        // También escribir en un log TXT lo mismo que se imprime
+        pthread_mutex_lock(&mtx);
+        FILE* lf = fopen("clima_log.txt", "a");
+        if(lf){
+            fputs(line, lf);
+            fclose(lf);
+        }
+        pthread_mutex_unlock(&mtx);
 
         write_file_atomic();
     }
@@ -143,6 +155,15 @@ int main(void){
 
     // Escritura inicial del archivo para que exista desde el arranque
     write_file_atomic();
+
+    // Línea inicial en el log para dejar registro del arranque
+    pthread_mutex_lock(&mtx);
+    FILE* lf = fopen("clima_log.txt", "a");
+    if(lf){
+        fprintf(lf, "# Inicio proceso PID=%d\n", getpid());
+        fclose(lf);
+    }
+    pthread_mutex_unlock(&mtx);
 
     sensor_cfg_t cfgs[4] = {
         { "temperatura", 8, 3, (unsigned)time(NULL) ^ 0xABC1 },

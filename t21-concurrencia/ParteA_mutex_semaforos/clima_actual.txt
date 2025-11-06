@@ -1,6 +1,6 @@
 # Estado actual del clima (actualizado por seccion critica con mutex)
-Proceso PID: 91155
-Temperatura (C): 15.11 (ts=2025-11-06 16:01:34)
-Humedad (%): 84.14 (ts=2025-11-06 16:01:35)
-Viento (m/s): 1.73 (ts=2025-11-06 16:01:35)
-Precipitacion (mm): 2.61 (ts=2025-11-06 16:01:34)
+Proceso PID: 93172
+Temperatura (C): 28.51 (ts=2025-11-06 16:04:33)
+Humedad (%): 87.62 (ts=2025-11-06 16:04:34)
+Viento (m/s): 28.55 (ts=2025-11-06 16:04:35)
+Precipitacion (mm): 6.96 (ts=2025-11-06 16:04:32)
