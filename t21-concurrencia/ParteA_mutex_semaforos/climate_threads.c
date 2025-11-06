@@ -141,6 +141,9 @@ int main(void){
     clock_gettime(CLOCK_REALTIME, &shared.ts_temp);
     shared.ts_hum = shared.ts_viento = shared.ts_lluvia = shared.ts_temp;
 
+    // Escritura inicial del archivo para que exista desde el arranque
+    write_file_atomic();
+
     sensor_cfg_t cfgs[4] = {
         { "temperatura", 8, 3, (unsigned)time(NULL) ^ 0xABC1 },
         { "humedad"    ,12, 2, (unsigned)time(NULL) ^ 0xABC2 },
