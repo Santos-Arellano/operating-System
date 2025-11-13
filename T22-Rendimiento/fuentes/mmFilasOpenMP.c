@@ -1,4 +1,5 @@
 /*#######################################################################################
+/Users/santosa/Documents/GitHub/operating-System/T22-Rendimiento/fuentes/mmFilasOpenMP.c
  #* Fecha:
  #* Autor: J. Corredor, PhD
  #* Programa:

@@ -1,4 +1,5 @@
 # scripts/plot_results.py
+#/Users/santosa/Documents/GitHub/operating-System/T22-Rendimiento/scripts/plot_results.py
 # Lee ./dat/*.dat y produce summary.csv + gráficas (tiempo, speedup, eficiencia).
 import os, re, math, csv, glob
 from pathlib import Path
