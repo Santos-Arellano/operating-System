@@ -4,10 +4,11 @@ CFLAGS   := -O3 -march=native -Wall -Wextra -std=c11
 OMPFLAGS := -fopenmp
 PTHFLAGS := -pthread
 
-SRC_FORK      := mmClasicaFork.c
-SRC_OMP       := mmClasicaOpenMP.c
-SRC_PTHREADS  := mmClasicaPosix.c
-SRC_OMP_TRANS := mmFilasOpenMP.c
+SRC_DIR       := fuentes
+SRC_FORK      := $(SRC_DIR)/mmClasicaFork.c
+SRC_OMP       := $(SRC_DIR)/mmClasicaOpenMP.c
+SRC_PTHREADS  := $(SRC_DIR)/mmClasicaPosix.c
+SRC_OMP_TRANS := $(SRC_DIR)/mmFilasOpenMP.c
 
 BIN_FORK      := mm_fork
 BIN_OMP       := mm_omp
