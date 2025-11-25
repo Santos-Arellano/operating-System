@@ -2,6 +2,9 @@
     "files.associations": {
         "stdatomic.h": "c",
         "time.h": "c",
-        "stat.h": "c"
+        "stat.h": "c",
+        "queue": "c",
+        "stack": "c",
+        "istream": "c"
     }
 }

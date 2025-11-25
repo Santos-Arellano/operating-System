@@ -1,0 +1,1 @@
+ps.add_argument("--algo","-a",choices=["FCFS","SJF","SRTF","PRIO","PRIO_PREEMPT","RR"],required=True)
