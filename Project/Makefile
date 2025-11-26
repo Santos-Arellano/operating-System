@@ -1,15 +1,14 @@
 CC=gcc
 CFLAGS=-O2 -std=c11 -Wall -Wextra
-LDFLAGS=
-PTHREAD=-lpthread
+LDFLAGS=-pthread
 
-BIN=osproj
-SRC=main.c scheduler.c memory.c disk.c sync.c shell.c
+all: controlador agente
 
-all: $(BIN)
+controlador: controlador.c comun.h
+	$(CC) $(CFLAGS) controlador.c -o controlador $(LDFLAGS)
 
-$(BIN): $(SRC)
-	$(CC) $(CFLAGS) -o $(BIN) $(SRC) $(PTHREAD) $(LDFLAGS)
+agente: agente.c comun.h
+	$(CC) $(CFLAGS) agente.c -o agente $(LDFLAGS)
 
 clean:
-	rm -f $(BIN)
+	rm -f controlador agente fifo_* pipe_*
