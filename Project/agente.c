@@ -104,9 +104,19 @@ int main(int argc, char *argv[]) {
     strncpy(reg.pipeRespuesta, pipeRespuesta, MAX_PIPE_NAME);
     reg.pipeRespuesta[MAX_PIPE_NAME-1] = '\0';
 
-    if (write(fdPrincipal, &reg, sizeof(reg)) != sizeof(reg)) {
-        perror("[Agente] Error enviando mensaje de registro");
-        exit(EXIT_FAILURE);
+    {
+        size_t need = sizeof(reg);
+        const char *p = (const char *)&reg;
+        size_t off = 0;
+        while (off < need) {
+            ssize_t w = write(fdPrincipal, p + off, need - off);
+            if (w < 0) {
+                if (errno == EINTR) continue;
+                perror("[Agente] Error enviando mensaje de registro");
+                exit(EXIT_FAILURE);
+            }
+            off += (size_t)w;
+        }
     }
 
     // Abre FIFO de respuesta en lectura (bloquea hasta que el controlador abra escritura)
@@ -118,10 +128,27 @@ int main(int argc, char *argv[]) {
 
     // Recibe la hora inicial de simulación y mensaje de bienvenida
     Mensaje m;
-    ssize_t n = read(fdResp, &m, sizeof(m));
-    if (n != sizeof(m) || m.tipo != MSG_HORA_INICIAL) {
-        fprintf(stderr, "[Agente] Error recibiendo hora inicial\n");
-        exit(EXIT_FAILURE);
+    {
+        size_t need = sizeof(m);
+        char *p = (char *)&m;
+        size_t off = 0;
+        while (off < need) {
+            ssize_t r = read(fdResp, p + off, need - off);
+            if (r < 0) {
+                if (errno == EINTR) continue;
+                perror("[Agente] Error leyendo hora inicial");
+                exit(EXIT_FAILURE);
+            }
+            if (r == 0) {
+                fprintf(stderr, "[Agente] EOF recibiendo hora inicial\n");
+                exit(EXIT_FAILURE);
+            }
+            off += (size_t)r;
+        }
+        if (m.tipo != MSG_HORA_INICIAL) {
+            fprintf(stderr, "[Agente] Mensaje inesperado en hora inicial\n");
+            exit(EXIT_FAILURE);
+        }
     }
 
     int horaSimulacion = m.horaSolicitada;
@@ -194,17 +221,40 @@ int main(int argc, char *argv[]) {
         sol.horaSolicitada = horaSolicitada;
         sol.personas = personas;
 
-        if (write(fdPrincipal, &sol, sizeof(sol)) != sizeof(sol)) {
-            perror("[Agente] Error enviando solicitud");
-            break;
+        {
+            size_t need = sizeof(sol);
+            const char *pp = (const char *)&sol;
+            size_t off = 0;
+            while (off < need) {
+                ssize_t w = write(fdPrincipal, pp + off, need - off);
+                if (w < 0) {
+                    if (errno == EINTR) continue;
+                    perror("[Agente] Error enviando solicitud");
+                    goto fin;
+                }
+                off += (size_t)w;
+            }
         }
 
         // Espera respuesta del controlador y la imprime
         Mensaje resp;
-        n = read(fdResp, &resp, sizeof(resp));
-        if (n != sizeof(resp)) {
-            perror("[Agente] Error leyendo respuesta");
-            break;
+        {
+            size_t need = sizeof(resp);
+            char *pr = (char *)&resp;
+            size_t off = 0;
+            while (off < need) {
+                ssize_t r = read(fdResp, pr + off, need - off);
+                if (r < 0) {
+                    if (errno == EINTR) continue;
+                    perror("[Agente] Error leyendo respuesta");
+                    goto fin;
+                }
+                if (r == 0) {
+                    fprintf(stderr, "[Agente] EOF leyendo respuesta\n");
+                    goto fin;
+                }
+                off += (size_t)r;
+            }
         }
 
         if (resp.tipo == MSG_RESPUESTA) {
@@ -222,6 +272,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Cierra archivo y termina protocolo
+fin:
     fclose(f);
 
     // Esperar posible mensaje de fin si no llegó todavía (opcional, simple)
