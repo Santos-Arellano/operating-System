@@ -1,68 +1,85 @@
-# ProyectoV2 — Simulación de reservas con IPC (FIFOs) y hilos
+# Simulación de reservas — IPC por FIFOs y hilos (Proyecto)
 
-Sistema distribuido simple compuesto por un `controlador` y múltiples `agentes` que interactúan mediante FIFOs (named pipes). Los agentes registran solicitudes de reserva (familia, hora solicitada, personas) y el controlador acepta, reprograma o niega según el aforo y el estado de la simulación. El tiempo avanza mediante un hilo de reloj.
+Sistema compuesto por un `controlador` y múltiples `agentes` que interactúan mediante FIFOs (named pipes). Los agentes registran solicitudes de reserva (familia, hora solicitada, personas) y el controlador acepta, reprograma o niega según aforo y estado de la simulación. El tiempo avanza mediante un hilo de reloj.
+
+**Novedades**
+- Lecturas/escrituras robustas de estructuras en `agente` (manejo de `EINTR` y I/O parcial).
+- Guía de ejecución de los 3 casos de prueba del enunciado.
+- Ajuste de rutas: usar este directorio `Project` con `Makefile`.
 
 ## Requisitos
-- Compilador C (`gcc`) con soporte C11.
-- POSIX: `pthread`, `mkfifo`, `open/read/write`.
+- `gcc` con C11 y `pthread`.
+- POSIX: `mkfifo`, `open/read/write`.
 - macOS o Linux.
 
 ## Estructura
 - `controlador.c`: servidor de simulación; gestiona registros, solicitudes, reloj y reporte final.
 - `agente.c`: cliente que lee CSV y envía solicitudes; recibe respuestas.
-- `comun.h`: contrato común (struct `Mensaje`, constantes `MSG_*`, `CODIGO_*`).
-- `solicitudes1.csv`, `solicitudes2.csv`, `solicitudes3.csv`: ejemplos.
-- `Makefile`: reglas de compilación.
+- `comun.h`: contrato común (`Mensaje`, `MSG_*`, `CODIGO_*`).
+- `solicitudes1.csv`, `solicitudes2.csv`, `solicitudes3.csv`: ejemplos de carga.
+- `Makefile`: reglas de compilación en este directorio.
 
 ## Compilación
 ```bash
-cd ProyectoV2
+cd Project
 make
 ```
 Genera `./controlador` y `./agente` con `-std=c11 -Wall -Wextra -pthread`.
 
-## Ejecución
-1) Inicia el controlador en un terminal:
+## Ejecución básica
+- Controlador (terminal A):
 ```bash
 ./controlador -i 7 -f 19 -s 2 -t 50 -p pipe_central
 ```
-- `-i`: hora inicio (ej. 7)
-- `-f`: hora fin (ej. 19)
-- `-s`: segundos por hora simulada
-- `-t`: aforo total
-- `-p`: nombre del FIFO principal
-
-2) Inicia uno o varios agentes en otros terminales:
+- Agentes (terminales B/C/D):
 ```bash
 ./agente -s Agente1 -a solicitudes1.csv -p pipe_central
 ./agente -s Agente2 -a solicitudes2.csv -p pipe_central
 ./agente -s Agente3 -a solicitudes3.csv -p pipe_central
 ```
-- `-s`: nombre del agente (genera FIFO `fifo_<Agente>`)
-- `-a`: archivo CSV de solicitudes
-- `-p`: FIFO principal del controlador
 
-## Flujo de Mensajes
-- Registro:
-  - Agente envía `MSG_REGISTRO` con su FIFO de respuesta.
-  - Controlador responde `MSG_HORA_INICIAL` con `horaActual` y mensaje de bienvenida.
-- Solicitud:
-  - Agente envía `MSG_SOLICITUD` por cada línea del CSV.
-  - Controlador responde `MSG_RESPUESTA` con `codigo` y, si aplica, `horaAsignada` y `horaAsignada2`.
-- Fin:
-  - Al terminar la simulación, controlador envía `MSG_FIN` a todos los agentes.
+## Casos de prueba
+**Caso 1 — Ejecuciones aisladas y manejo de argumentos**
+- Controlador sin argumentos: `./controlador` → imprime uso.
+- Agente sin argumentos: `./agente` → imprime uso.
+- Ejecución válida aislada:
+```bash
+./controlador -i 7 -f 10 -s 1 -t 50 -p pipe_case1
+./agente -s Agente1 -a solicitudes1.csv -p pipe_case1
+```
 
-## Lógica de Reservas
-- Acepta en la hora solicitada si existen 2 horas consecutivas con cupo (`w` y `w+1`).
-- Si no, reprograma a la primera franja disponible a partir de `horaActual`.
-- Si no hay cupo en el día, niega.
-- Valida entradas: niega si `personas <= 0` o la hora está fuera de `[horaIni, horaFin)`.
+**Caso 2 — Funcionamiento normal 1 agente vs controlador**
+- Ejemplo para ver aceptaciones y negativas:
+```bash
+./controlador -i 7 -f 12 -s 2 -t 20 -p pipe_case2
+./agente -s Agente3 -a solicitudes3.csv -p pipe_case2
+```
+- Esperado: `FamiliaX,8,25` suele negarse por aforo; `FamiliaY,10,15` se acepta o reprograma según ocupación.
 
-### Códigos de respuesta (`CODIGO_*`)
+**Caso 3 — Múltiples agentes en concurrencia**
+```bash
+./controlador -i 7 -f 19 -s 2 -t 20 -p pipe_case3
+./agente -s Agente1 -a solicitudes1.csv -p pipe_case3
+./agente -s Agente2 -a solicitudes2.csv -p pipe_case3
+./agente -s Agente3 -a solicitudes3.csv -p pipe_case3
+```
+- Observa registros, respuestas variadas (OK/reprogramada/negada), avances de hora y reporte final.
+
+## Flujo de mensajes
+- Registro: `MSG_REGISTRO` y respuesta `MSG_HORA_INICIAL` con la `horaActual`.
+- Solicitud: `MSG_SOLICITUD` y `MSG_RESPUESTA` con `codigo`, `horaAsignada` y `horaAsignada2` cuando aplica.
+- Fin: `MSG_FIN` emitido a todos los agentes al terminar la simulación.
+
+## Lógica de reservas
+- Acepta si hay 2 horas consecutivas con cupo.
+- Reprograma desde `horaActual` a la primera franja disponible.
+- Niega si no hay cupo en el día o parámetros inválidos.
+
+### Códigos de respuesta
 - `CODIGO_OK`: aceptada en la hora solicitada.
-- `CODIGO_REPROGRAMADA`: reprogramada a otra hora con cupo.
+- `CODIGO_REPROGRAMADA`: movida a otra hora con cupo.
 - `CODIGO_EXTEMPORANEA_REPROGRAMADA`: solicitada antes de `horaActual`, reprogramada.
-- `CODIGO_NEGADA_VOLVER_OTRO_DIA`: no hay cupo o parámetros inválidos.
+- `CODIGO_NEGADA_VOLVER_OTRO_DIA`: no hay cupo o datos inválidos.
 
 ## Formato de CSV
 Cada línea: `Familia,HoraSolicitada,Personas`
@@ -72,40 +89,16 @@ Zuluaga,8,10
 Dominguez,8,4
 Rojas,10,10
 ```
-El agente ignora una cabecera si encuentra `Familia` en la primera línea.
+El agente ignora una cabecera si la primera línea contiene `Familia`.
 
-## Ejemplo de Sesión
-Controlador:
-```bash
-./controlador -i 7 -f 19 -s 1 -t 20 -p pipe_central
-[Controlador] Configuración:
-  Hora inicio: 7
-  Hora fin   : 19
-  Seg/Hora   : 1
-  Aforo total: 20
-  FIFO       : pipe_central
-```
-Agente:
-```bash
-./agente -s Agente1 -a solicitudes1.csv -p pipe_central
-[Agente Agente1] Registrado. Hora actual de simulación: 7
-Mensaje del controlador: Bienvenido, la hora actual de simulación es 7
-[Agente Agente1] Respuesta para familia Zuluaga:
-  Codigo : 0
-  Mensaje: Reserva aceptada en la hora solicitada.
-  Horas  : 8 - 9
-...
-```
+## Concurrencia y estado
+- Dos hilos en el controlador: recepción y reloj.
+- Estado compartido protegido con `mutexDatos` (ocupación, reservas, agentes).
+- Descriptor dummy en escritura para evitar `read==0` cuando no haya escritores en el FIFO principal.
+- En el agente, lecturas/escrituras de `Mensaje` se realizan en bucles para evitar I/O parcial y manejar `EINTR`.
 
-## Concurrencia y Estado
-- `controlador` usa dos hilos:
-  - Recepción (`read` sobre FIFO principal), protegido con `mutexDatos`.
-  - Reloj (`sleep(segHoras)`), actualiza `horaActual` y reporta entradas/salidas.
-- Estado compartido protegido: `ocupacion[h]`, reservas y agentes.
-- Truco `fdDummy` para mantener abierto el FIFO principal y evitar `read==0`.
-
-## Reporte Final
-Al final del día, imprime horas pico/valle y totales:
+## Reporte final
+Ejemplo de salida:
 ```
 ========== REPORTE FINAL ==========
 Hora pico  : <h> con <X> personas
@@ -120,21 +113,16 @@ Solicitudes negadas      : N
 ```bash
 make clean
 ```
-Elimina binarios y FIFOs `fifo_*` y `pipe_*`.
+Elimina binarios y FIFOs `fifo_*` y `pipe_*` en el directorio.
 
-## Pruebas Sugeridas
-- Extemporáneas: solicitudes con `horaSolicitada < horaActual`.
-- Límite de aforo: ajustar `-t` para forzar reprogramaciones/negaciones.
-- Múltiples agentes: enviar cargas concurrentes y verificar consistencia.
-- Borde de horario: pedir en `horaFin-1` (aceptar) y `horaFin` (negar).
+## Troubleshooting
+- `Error abriendo FIFO principal`: verifica que el controlador está corriendo y que el nombre del FIFO coincide.
+- `Mensaje incompleto recibido`: usa versiones idénticas de `comun.h` en controlador y agente; las lecturas/escrituras del agente son completas.
+- `zsh: terminated`: evita relanzar comandos en el mismo terminal ocupado; usa un terminal por proceso.
+- Permisos: si no se crean FIFOs, revisa permisos del directorio y ejecuta `make clean` para limpiar FIFOs previos.
 
-## Problemas frecuentes
-- `Error abriendo FIFO principal`: asegúrate de que el controlador esté ejecutándose y que el nombre de FIFO coincida.
-- `Mensaje incompleto recibido`: revisa que las versiones de `comun.h` sean idénticas en controlador/agente.
-- `Permisos`: si los FIFOs no se crean, valida permisos del directorio y elimina FIFOs previos con `make clean`.
-
-## Alineación con el enunciado
+## Alineación con el enunciado (PDF)
 - Comunicación por FIFOs con mensajes tipados (`MSG_*`).
 - Gestión de aforo y ventanas de tiempo consecutivas.
-- Simulación de tiempo por hilo separado.
-- Reportes finales y trazabilidad por consola.
+- Simulación de tiempo por hilo separado y reporte final.
+- Cobertura de los tres casos de prueba (aislado, 1 agente, múltiples agentes).
